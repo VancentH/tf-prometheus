@@ -49,8 +49,6 @@ resource "aws_subnet" "subnet-1" {
   availability_zone = "us-east-1a"
 }
 
-# 為何 subnet 跟 route table 要 associate 呢？
-# 關聯 Route Table 是為了定義和控制子網內的網絡流量路由規則，確保數據在 VPC 中按照你的預期流動。
 # associate subnet with route table
 resource "aws_route_table_association" "a" {
   subnet_id      = aws_subnet.subnet-1.id
@@ -118,10 +116,6 @@ resource "aws_security_group" "allow_web" {
 }
 
 # NIC
-# 在AWS中，network interface與subnet跟security group有什麼關係？
-# 1.Network Interface 必須與一個特定的 Subnet 相關聯，因為它需要在該 Subnet 中獲得一個 IP 地址。
-# 2.Network Interface 通過與 Security Group 相關聯，可以定義哪些流量是允許進入或離開 Network Interface 的。
-# NIC跟subnet要一個ip、security group包住一個NIC，NIC去attach到EC2上
 resource "aws_network_interface" "web-server-nic" {
   subnet_id       = aws_subnet.subnet-1.id
   private_ips     = ["10.0.1.50"]
@@ -130,8 +124,6 @@ resource "aws_network_interface" "web-server-nic" {
 
 
 # eip
-# 在 AWS 中，EIP 與 network interface 和 internet gateway 有何關係？
-# EIP 是靜態公開 IP，與私有的 NIC 關聯，使 EC2 有公開的 IP。因為希望與 Internet 通訊，所以也需要配置 Internet gateway。
 resource "aws_eip" "one" {
   domain                    = "vpc"
   network_interface         = aws_network_interface.web-server-nic.id
@@ -150,8 +142,6 @@ resource "aws_instance" "prometheus-instance" {
     device_index         = 0
     network_interface_id = aws_network_interface.web-server-nic.id
   }
-
-  #user_data = file("userdata.sh")
 
   tags = {
     Name = var.ami_name
